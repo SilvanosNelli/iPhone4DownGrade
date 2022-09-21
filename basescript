@@ -3,7 +3,7 @@
 # Script to downgrade iPhone 4 GSM (iPhone3,1) to 4.3.5
 #
 
-#set -e
+set -e
 
 IPSWBase="./BaseFiles/iPhone3,1_7.1.2_11D257_Restore.ipsw"
 IPSWLow="./BaseFiles/iPhone3,1_4.3.5_8L1_Restore.ipsw"
