@@ -3,22 +3,37 @@
 # Script to downgrade iPhone 4 GSM (iPhone3,1) to 4.3.5
 #
 
-echo -e "Please drag-n-drop your iOS 7.1.2 IPSW: "
-read IPSWBase
+#set -e
 
-echo -e "Please drag-n-drop your iOS 4.3.5 IPSW: "
-read IPSWLow
-echo "Now the magic begins..."
+IPSWBase="./BaseFiles/iPhone3,1_7.1.2_11D257_Restore.ipsw"
+IPSWLow="./BaseFiles/iPhone3,1_4.3.5_8L1_Restore.ipsw"
+
+
+if [[ !(-f "$IPSWBase") ]]; then
+    echo "Cannot find iOS 7.1.2 IPSW File. Downloading..."
+    curl -O http://appldnld.apple.com/iOS7.1/031-4812.20140627.cq6y8/iPhone3,1_7.1.2_11D257_Restore.ipsw
+    mv iPhone3,1_7.1.2_11D257_Restore.ipsw $IPSWBase
+fi
+
+if [[ !(-f "$IPSWBase") ]]; then
+    echo "Cannot find iOS 4.3.5 IPSW File. Downloading..."
+    curl -O http://appldnld.apple.com/iPhone4/041-1966.20110721.V3Ufe/iPhone3,1_4.3.5_8L1_Restore.ipsw
+    mv iPhone3,1_4.3.5_8L1_Restore.ipsw $IPSWLow
+fi
+
+
+echo "Please plug in your iPhone 4 in DFU Mode (Press and hold Lock button and Home Button simultaneously)"
+read -n 1 -s -r -p "Press any key to continue"
+echo ""
 
 ./ipwndfu/ipwndfu -p
 ./cherryflower/idevicerestore -t $IPSWBase
 
-echo -e "\n\n Please enter your device ECID (The numerical part of the string above that says \"SHSH saved to 'shsh/[YOUR IPHONE'S ECID HERE]-iPhone3,1-7.1.2.shsh'\") : "
-read DEVECID
+DEVECID=$(./tools/ideviceinfo -k UniqueChipID)
 
-zcat < ./cherryflower/shsh/$DEVECID-iPhone3,1-7.1.2.shsh > ./cherryflower/shsh/$DEVECID-iPhone3,1-7.1.2.plist
-plutil -convert xml1 ./cherryflower/shsh/$DEVECID-iPhone3,1-7.1.2.plist
+zcat < ./shsh/$DEVECID-iPhone3,1-7.1.2.shsh > ./shsh/$DEVECID-iPhone3,1-7.1.2.plist
+plutil -convert xml1 ./shsh/$DEVECID-iPhone3,1-7.1.2.plist
 
-./cherryflower/cherryJB $IPSWLow $DEVECID\_iPhone3,1_4.3.5_8J2_Custom.ipsw -memory -derebusantiquis $IPSWBase -a ./cherryflower/shsh/$DEVECID-iPhone3,1-7.1.2.plist
+./cherryflower/cherryJB $IPSWLow $DEVECID\_iPhone3,1_4.3.5_8J2_Custom.ipsw -memory -derebusantiquis $IPSWBase -a ./shsh/$DEVECID-iPhone3,1-7.1.2.plist
 
 ./cherryflower/idevicerestore -e -w $DEVECID\_iPhone3,1_4.3.5_8J2_Custom.ipsw
